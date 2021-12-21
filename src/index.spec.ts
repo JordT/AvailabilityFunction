@@ -2,6 +2,7 @@ import * as expect from "expect";
 import { fetchAvailability } from "./index";
 import { Space } from "./types";
 
+// the end goal
 describe("src/index", () => {
   describe("a space with no advance notice", () => {
     let space: Space;
@@ -14,6 +15,8 @@ describe("src/index", () => {
         space,
         1,
         new Date(Date.UTC(2020, 8, 7, 15, 22))
+                        // year, day, month, 
+                        // Mon, 07 Sep 2020 15:22:00 GMT
       );
 
       expect(availability).toStrictEqual({
