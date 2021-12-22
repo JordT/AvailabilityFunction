@@ -1,11 +1,11 @@
-export interface Time {
-  hour: number;
-  minute: number;
-}
-
 export interface OpeningTimes {
   open?: Time;
   close?: Time;
+}
+
+export interface Time {
+  hour: number;
+  minute: number;
 }
 
 export type AvailabilityCalendar = Record<string, OpeningTimes>;
