@@ -14,8 +14,10 @@ describe("src/index", () => {
       const availability = fetchAvailability(
         space,
         1,
-        new Date(Date.UTC(2020, 8, 7, 15, 22))
-                        // year, day, month, 
+        // new Date(Date.UTC(2020, 8, 7, 15, 22))
+        new Date(Date.UTC(2020, 8, 7, 15, 59))
+
+                        // year, month-1, day, 
                         // Mon, 07 Sep 2020 15:22:00 GMT
       );
 
