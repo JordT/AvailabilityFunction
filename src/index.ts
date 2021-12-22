@@ -17,18 +17,18 @@ export const fetchAvailability = (
   // calculate days in space to go forward with...
   let availability: Record<string, OpeningTimes> = {}
 // get space into availability, then we can return availability
-  let dayoftheweek = now.getDay() // returnsdate as a string
-//  let dayoftheweek = now.getDate() returns 
+  // let dayoftheweek = 5 // returnsdate as a string
+  // availability[dayoftheweek] =  space.openingTimes[now.getDay()] //returns opening hours for the current day...
+  //  let dayoftheweek = now.getDate() returns 
   // availability[test] =  space.openingTimes
-  availability[dayoftheweek] =  space.openingTimes[now.getDay()]
 
   
   // let availability: Record<string, OpeningTimes> = {}
   // // get current day, then pull data if theres availability on that day.
-  // for (let i = 0; i < numberOfDays; i++) {
-  //   let day = space.openingTimes[i.toString()] //loop through and get each openingtimes.
-  //   availability[i.toString()] = day
-  // }
+  for (let i = 1; i <= numberOfDays; i++) {
+    let day = space.openingTimes[i] //loop through and get each openingtimes.
+    availability[i.toString()] = day
+  }
 
 
   return availability;
