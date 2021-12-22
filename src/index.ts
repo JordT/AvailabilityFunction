@@ -44,11 +44,13 @@ export const fetchAvailability = (
     }
   }
 
+  // to display the dates we want to use format single dates, but currently the return is wrong by one day....
+
 
   // Loop returns day of the week and opening times for those days.
   for (let i = 1; i <= numberOfDays; i++) {
     let currentDay = now.getDay() - 1 + i;
-    let returnDate = `${now.getFullYear()}-${formatSingleDigitDates(now.getMonth().toString())}-${formatSingleDigitDates(now.getDay().toString())}`
+    let returnDate = `${now.getFullYear()}-${formatSingleDigitDates(now.getMonth().toString())}-${formatSingleDigitDates(now.getDate().toString())}`
     availability[returnDate] = space.openingTimes[currentDay] // this is the opening times for the current day... so do we return with now.getDate()?
     
     // can delete if this works...
