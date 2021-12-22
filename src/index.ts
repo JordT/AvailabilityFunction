@@ -16,10 +16,8 @@ export const fetchAvailability = (
   // and each string has an opening time object
 
   let availability: Record<string, OpeningTimes> = {}
-  // availability[dayoftheweek] =  space.openingTimes[now.getDay()] //returns opening hours for the current day...
-  //  let dayoftheweek = now.getDate() returns 
 
-  // working code
+  // Round current minutes to 15 minute intervals
   const roundTime = (now: Date) => {
     if (now.getMinutes() != 0 || 15 || 30 || 45){
       if (now.getMinutes() < 15) {
@@ -35,20 +33,28 @@ export const fetchAvailability = (
       }
     }
   }
-
   roundTime(now)
+  // availability[now.getMinutes()] = space.openingTimes[7] //tests the block above
 
-  availability[now.getMinutes()] = space.openingTimes[7]
-
-  // working code
+  const formatSingleDigitDates = (d:string) => {
+    if (d.length == 1) {
+      return `0${d}`
+    } else {
+      return d
+    }
+  }
 
 
   // Loop returns day of the week and opening times for those days.
   for (let i = 1; i <= numberOfDays; i++) {
-    let day = space.openingTimes[i] 
-
-    // get the date and set that to key 
-    availability[i.toString()] = day
+    let currentDay = now.getDay() - 1 + i;
+    let returnDate = `${now.getFullYear()}-${formatSingleDigitDates(now.getMonth().toString())}-${formatSingleDigitDates(now.getDay().toString())}`
+    availability[returnDate] = space.openingTimes[currentDay] // this is the opening times for the current day... so do we return with now.getDate()?
+    
+    // can delete if this works...
+    // let currentDay = now.getDay() // 5
+    // let day = space.openingTimes[i] 
+    // availability[i.toString()] = day
   }
 
 
