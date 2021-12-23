@@ -1,6 +1,5 @@
-import { checkPrime } from "crypto";
 import { OpeningTimes, Space } from "./types";
-const moment = require('moment-timezone');
+var moment = require('moment-timezone');
 
 /**
  * Fetches upcoming availability for a space
@@ -16,10 +15,10 @@ export const fetchAvailability = (
   // Your implementation here ************
   let availability: Record<string, OpeningTimes> = {}
 
-  // does setting now to a moment string break the whole shebang?
-  let getTimeZoneOffset = moment(now).tz(space.timeZone).format('ZZ')
-  now = moment(now).utcOffset(getTimeZoneOffset).format('YYYY-MM-DD hh:mm') 
-  
+  // adjust 'now' Date object to the timezone specified in space object
+  let getTimeZoneOffset = moment(now).tz(space.timeZone).format('ZZ') //get timezone offset
+  now = moment(now).utcOffset(getTimeZoneOffset).format('YYYY-MM-DD hh:mm') // apply timezone offset
+  now = moment(now).toDate();   //convert moment wrapper back to a JS Date Object (we could refactor to moment throughout...)
 
   // Round current minutes to 15 minute intervals
   const adjustTime = (now: Date) => {
@@ -42,11 +41,9 @@ export const fetchAvailability = (
     // now = moment(now).utcOffset(getTimeZoneOffset).format('YYYY-MM-DD hh:mm') 
     // availability[now.toString()] = {} // test now works
   }
-  adjustTime(now)
-  // availability[now.getMinutes()] = space.openingTimes[7] //tests the block above
+  adjustTime(now)  // availability[now.getMinutes()] = space.openingTimes[7] //tests the block above
 
-  //display dates correctly
-  const formatDates = (d:number) => {
+  const formatDates = (d:number) => {   //display dates correctly
     if (d.toString().length == 1) {
       return `0${d}`
     } else {
@@ -54,8 +51,7 @@ export const fetchAvailability = (
     }
   }
 
-  //display months correctly
-  const formatMonths = (d:number) => {
+  const formatMonths = (d:number) => {   //display dates correctly
     if (d.toString().length == 1) {
       return `0${d+1}`
     } else {
@@ -63,14 +59,22 @@ export const fetchAvailability = (
     }
   }
 
-  // we need to consdier time zones..
-  //newyork is -5 hours to UTC times that are given... so we need to adjust current time to space.timezone?
   // Loop returns day of the week and opening times for those days.
   for (let i: number = 0; i < numberOfDays; i++) {
     let currentDay = now.getDay() + i;
-    let currentDate = now.getDate() + i; 
+    let currentDate = now.getDate() + i;
+    let currentTime = now.getTime()
     let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(currentDate)}`
 
+    // we need to access the js object... this is how we access the times...
+    let time = space.openingTimes[currentDay].close?.hour
+    if (typeof time === 'number') {
+      time.toString()
+      availability[time] = space.openingTimes[currentDay] 
+    }
+
+
+    // ***
     availability[returnDate] = space.openingTimes[currentDay]
   }
 
