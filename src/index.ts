@@ -16,8 +16,14 @@ export const fetchAvailability = (
   // Your implementation here ************
   let availability: Record<string, OpeningTimes> = {}
 
+  // does setting now to a moment string break the whole shebang?
+  let getTimeZoneOffset = moment(now).tz(space.timeZone).format('ZZ')
+  now = moment(now).utcOffset(getTimeZoneOffset).format('YYYY-MM-DD hh:mm') 
+  
+
   // Round current minutes to 15 minute intervals
   const adjustTime = (now: Date) => {
+    // availability[now.toString()] = {}
     if (now.getMinutes() != 0 || 15 || 30 || 45){
       if (now.getMinutes() < 15) {
         now.setMinutes(15)
@@ -32,11 +38,9 @@ export const fetchAvailability = (
       }
     }
     // adjust current time for timezone -- use this codeee boiiiiii
-    
-    let checkMin = moment(now).tz(space.timeZone).format('ZZ')
-    let timezoned = moment(now).utcOffset(checkMin).format('YYYY-MM-DD hh:mm')
-
-    availability[timezoned] = {}
+    // let getTimeZoneOffset = moment(now).tz(space.timeZone).format('ZZ')
+    // now = moment(now).utcOffset(getTimeZoneOffset).format('YYYY-MM-DD hh:mm') 
+    // availability[now.toString()] = {} // test now works
   }
   adjustTime(now)
   // availability[now.getMinutes()] = space.openingTimes[7] //tests the block above
