@@ -1,3 +1,4 @@
+import { checkPrime } from "crypto";
 import { OpeningTimes, Space } from "./types";
 const moment = require('moment-timezone');
 
@@ -30,9 +31,12 @@ export const fetchAvailability = (
         now.setHours(now.getHours() + 1)
       }
     }
-    // adjust current time for timezone
-    // moment(now).tz(space.timeZone).format()
+    // adjust current time for timezone -- use this codeee boiiiiii
     
+    let checkMin = moment(now).tz(space.timeZone).format('ZZ')
+    let timezoned = moment(now).utcOffset(checkMin).format('YYYY-MM-DD hh:mm')
+
+    availability[timezoned] = {}
   }
   adjustTime(now)
   // availability[now.getMinutes()] = space.openingTimes[7] //tests the block above
@@ -66,8 +70,6 @@ export const fetchAvailability = (
     availability[returnDate] = space.openingTimes[currentDay]
   }
 
-  let checkMin = moment(now).tz(space.timeZone).format('YYYY-MM-DD')
-  availability[checkMin] = {}
   return availability;
 };
 
