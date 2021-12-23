@@ -36,39 +36,39 @@ export const fetchAvailability = (
   roundTime(now)
   // availability[now.getMinutes()] = space.openingTimes[7] //tests the block above
 
-  const formatSingleDigitDates = (d:string) => {
-    if (d.length == 1) {
+  //display dates correctly
+  const formatDates = (d:number) => {
+    if (d.toString().length == 1) {
       return `0${d}`
     } else {
       return d
     }
   }
 
-  // to display the dates we want to use format single dates, but currently the return is wrong by one day....
+  //display months correctly
+  const formatMonths = (d:number) => {
+    if (d.toString().length == 1) {
+      return `0${d+1}`
+    } else {
+      return d+1
+    }
+  }
 
 
   // Loop returns day of the week and opening times for those days.
-  for (let i = 1; i <= numberOfDays; i++) {
-    let currentDay = now.getDay() - 1 + i;
-    let returnDate = `${now.getFullYear()}-${formatSingleDigitDates(now.getMonth().toString())}-${formatSingleDigitDates(now.getDate().toString())}`
-    availability[returnDate] = space.openingTimes[currentDay] // this is the opening times for the current day... so do we return with now.getDate()?
+  for (let i: number = 0; i < numberOfDays; i++) {
+    let currentDay = now.getDay() + i;
+    let currentDate = now.getDate() + i; 
+    let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(currentDate)}`
     
-    // can delete if this works...
-    // let currentDay = now.getDay() // 5
-    // let day = space.openingTimes[i] 
-    // availability[i.toString()] = day
+    availability[returnDate] = space.openingTimes[currentDay]
   }
-
 
 
   return availability;
 };
-  // Calculate availabilty for the number of days specified in numberOfDays
 
-  // can we slice the space to length?
-
-  // space is going to be an object, with opening times.
-  // number of days is how far from now we want to look.
+// Calculate availabilty for the number of days specified in numberOfDays
 
 // Don't return times that in the past relative to 'now'
 
