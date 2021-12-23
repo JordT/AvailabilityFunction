@@ -14,31 +14,61 @@ export const fetchAvailability = (
   // Your implementation here ************
   // so we need to return a json object, where the date is a string.
   // and each string has an opening time object
-  // calculate days in space to go forward with...
-  let availability: Record<string, OpeningTimes> = {}
-// get space into availability, then we can return availability
-  // let dayoftheweek = 5 // returnsdate as a string
-  // availability[dayoftheweek] =  space.openingTimes[now.getDay()] //returns opening hours for the current day...
-  //  let dayoftheweek = now.getDate() returns 
-  // availability[test] =  space.openingTimes
 
-  
-  // let availability: Record<string, OpeningTimes> = {}
-  // // get current day, then pull data if theres availability on that day.
-  for (let i = 1; i <= numberOfDays; i++) {
-    let day = space.openingTimes[i] //loop through and get each openingtimes.
-    availability[i.toString()] = day
+  let availability: Record<string, OpeningTimes> = {}
+
+  // Round current minutes to 15 minute intervals
+  const roundTime = (now: Date) => {
+    if (now.getMinutes() != 0 || 15 || 30 || 45){
+      if (now.getMinutes() < 15) {
+        now.setMinutes(15)
+      } 
+      else if (now.getMinutes() < 30) {
+        now.setMinutes(30)
+      } else if(now.getMinutes() < 45) {
+        now.setMinutes(45)
+      } else if (now.getMinutes() <= 59) {
+        now.setMinutes(0)
+        now.setHours(now.getHours() + 1)
+      }
+    }
+  }
+  roundTime(now)
+  // availability[now.getMinutes()] = space.openingTimes[7] //tests the block above
+
+  //display dates correctly
+  const formatDates = (d:number) => {
+    if (d.toString().length == 1) {
+      return `0${d}`
+    } else {
+      return d
+    }
+  }
+
+  //display months correctly
+  const formatMonths = (d:number) => {
+    if (d.toString().length == 1) {
+      return `0${d+1}`
+    } else {
+      return d+1
+    }
+  }
+
+
+  // Loop returns day of the week and opening times for those days.
+  for (let i: number = 0; i < numberOfDays; i++) {
+    let currentDay = now.getDay() + i;
+    let currentDate = now.getDate() + i; 
+    let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(currentDate)}`
+    
+    availability[returnDate] = space.openingTimes[currentDay]
   }
 
 
   return availability;
 };
-  // Calculate availabilty for the number of days specified in numberOfDays
 
-  // can we slice the space to length?
-
-  // space is going to be an object, with opening times.
-  // number of days is how far from now we want to look.
+// Calculate availabilty for the number of days specified in numberOfDays
 
 // Don't return times that in the past relative to 'now'
 
