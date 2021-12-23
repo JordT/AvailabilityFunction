@@ -58,21 +58,28 @@ export const fetchAvailability = (
       return d+1
     }
   }
+  // we only need to consider opening times on day 1?
 
   // Loop returns day of the week and opening times for those days.
   for (let i: number = 0; i < numberOfDays; i++) {
     let currentDay = now.getDay() + i;
     let currentDate = now.getDate() + i;
-    let currentTime = now.getTime()
     let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(currentDate)}`
 
-    // we need to access the js object... this is how we access the times...
-    let time = space.openingTimes[currentDay].close?.hour
-    if (typeof time === 'number') {
-      time.toString()
-      availability[time] = space.openingTimes[currentDay] 
-    }
+    // we need to access the js object... this is how we access the times... they need to be all defined wiht a type check?
+    let currentTimeHour = now.getHours()
+    let currentTimeMinute = now.getMinutes()
+    let openingTimeHour = space.openingTimes[currentDay].open?.hour
+    let openingTimeMinute = space.openingTimes[currentDay].open?.minute
+    let closingTimeHour = space.openingTimes[currentDay].close?.hour
+    let closingTimeMinute = space.openingTimes[currentDay].close?.minute
 
+    if (typeof openingTimeHour === 'number' && typeof openingTimeMinute === 'number') {
+      //currenttime is in milliseconds ree.
+      if (currentTimeHour >= openingTimeHour && currentTimeMinute >= openingTimeMinute) {
+        availability[currentTimeHour.toString()] = space.openingTimes[currentDay] 
+      }
+    }
 
     // ***
     availability[returnDate] = space.openingTimes[currentDay]
