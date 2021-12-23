@@ -1,4 +1,5 @@
 import { OpeningTimes, Space } from "./types";
+const moment = require('moment-timezone');
 
 /**
  * Fetches upcoming availability for a space
@@ -12,13 +13,10 @@ export const fetchAvailability = (
   now: Date
 ): Record<string, OpeningTimes> => {
   // Your implementation here ************
-  // so we need to return a json object, where the date is a string.
-  // and each string has an opening time object
-
   let availability: Record<string, OpeningTimes> = {}
 
   // Round current minutes to 15 minute intervals
-  const roundTime = (now: Date) => {
+  const adjustTime = (now: Date) => {
     if (now.getMinutes() != 0 || 15 || 30 || 45){
       if (now.getMinutes() < 15) {
         now.setMinutes(15)
@@ -32,8 +30,11 @@ export const fetchAvailability = (
         now.setHours(now.getHours() + 1)
       }
     }
+    // adjust current time for timezone
+    // moment(now).tz(space.timeZone).format()
+    
   }
-  roundTime(now)
+  adjustTime(now)
   // availability[now.getMinutes()] = space.openingTimes[7] //tests the block above
 
   //display dates correctly
@@ -54,17 +55,19 @@ export const fetchAvailability = (
     }
   }
 
-
+  // we need to consdier time zones..
+  //newyork is -5 hours to UTC times that are given... so we need to adjust current time to space.timezone?
   // Loop returns day of the week and opening times for those days.
   for (let i: number = 0; i < numberOfDays; i++) {
     let currentDay = now.getDay() + i;
     let currentDate = now.getDate() + i; 
     let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(currentDate)}`
-    
+
     availability[returnDate] = space.openingTimes[currentDay]
   }
 
-
+  let checkMin = moment(now).tz(space.timeZone).format('YYYY-MM-DD')
+  availability[checkMin] = {}
   return availability;
 };
 
