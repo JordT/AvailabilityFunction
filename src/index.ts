@@ -1,4 +1,5 @@
-import { OpeningTimes, Space } from "./types";
+import { open } from "fs";
+import { OpeningTimes, Space, Time } from "./types";
 var moment = require('moment-timezone');
 
 /**
@@ -75,9 +76,36 @@ export const fetchAvailability = (
     let closingTimeMinute = space.openingTimes[currentDay].close?.minute
 
     if (typeof openingTimeHour === 'number' && typeof openingTimeMinute === 'number') {
-      //currenttime is in milliseconds ree.
-      if (currentTimeHour >= openingTimeHour && currentTimeMinute >= openingTimeMinute) {
-        availability[currentTimeHour.toString()] = space.openingTimes[currentDay] 
+      //currenttime is in milliseconds ??
+      // ^^ investigate this oepning time comments
+      // ^^ work out what is currently happening
+
+      // if hour is greater than opening, and less than closeing proceed
+      // set opening time minutes
+      // if minutes is greater than openingtime minutes > set openingtime minutes
+      //else do nothing
+      if (i === 0) {
+        //start here
+        // on the first iteration we need to assign values to openingtimes etc.
+        // on the next iteration we can assume the opening times are standard :)
+        if (currentTimeHour >= openingTimeHour) {
+          // we need to set the this iterations time only to the current time.
+          // create a  return object?
+          let returnTime: OpeningTimes = {
+            open: {
+              hour: openingTimeHour,
+              minute: openingTimeMinute
+            },
+            close: {
+              hour: closingTimeHour!,
+              minute: closingTimeMinute!
+            }
+          }
+
+          // how do we return the opening hours to be now.getHours()?
+          availability[currentTimeHour.toString()] = returnTime
+          // availability[currentTimeHour.toString()] = space.openingTimes[currentDay] 
+        }
       }
     }
 
