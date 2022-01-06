@@ -70,7 +70,7 @@ describe("src/index", () => {
               "minute": 0
             },
             "close": {
-              "hour": 17, // 17
+              "hour": 17,
               "minute": 0
             }
           },

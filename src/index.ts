@@ -1,3 +1,4 @@
+import { notDeepEqual } from "assert";
 import { open } from "fs";
 import { OpeningTimes, Space, Time } from "./types";
 var moment = require('moment-timezone');
@@ -72,13 +73,19 @@ export const fetchAvailability = (
     let currentDate = now.getDate() + i;
     let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(currentDate)}`
 
-    // we need to only loop on the first day
+    /// testing  DELETE
+    availability[now.getHours().toString()] = {}
+    /// testing  DELETE
+
+    // we need to only check times on the current day // what if day one is a closed day?
+    // times are returning opening times of 11 for some reason... always?
+    // its the MINIMUM SPACE CHANGE ROUNDING THE MINITS TO the HOUR
     if (i == 0) {
       let currentTimeHour = now.getHours()
       let currentTimeMinute = now.getMinutes()
 
       let returnTime: OpeningTimes = space.openingTimes[currentDay] 
-      if (currentTimeHour > returnTime.open!.hour) {
+      if (currentTimeHour >= returnTime.open!.hour) {
         
         returnTime.open!.hour = currentTimeHour
 
