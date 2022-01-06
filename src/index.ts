@@ -1,6 +1,6 @@
-import { checkPrime } from "crypto";
-import { OpeningTimes, Space } from "./types";
-const moment = require('moment-timezone');
+import { open } from "fs";
+import { OpeningTimes, Space, Time } from "./types";
+var moment = require('moment-timezone');
 
 /**
  * Fetches upcoming availability for a space
@@ -16,10 +16,10 @@ export const fetchAvailability = (
   // Your implementation here ************
   let availability: Record<string, OpeningTimes> = {}
 
-  // does setting now to a moment string break the whole shebang?
-  let getTimeZoneOffset = moment(now).tz(space.timeZone).format('ZZ')
-  now = moment(now).utcOffset(getTimeZoneOffset).format('YYYY-MM-DD hh:mm') 
-  
+  // adjust 'now' Date object to the timezone specified in space object
+  let getTimeZoneOffset = moment(now).tz(space.timeZone).format('ZZ') //get timezone offset
+  now = moment(now).utcOffset(getTimeZoneOffset).format('YYYY-MM-DD hh:mm') // apply timezone offset
+  now = moment(now).toDate();   //convert moment wrapper back to a JS Date Object (we could refactor to moment throughout...)
 
   // Round current minutes to 15 minute intervals
   const adjustTime = (now: Date) => {
@@ -42,11 +42,9 @@ export const fetchAvailability = (
     // now = moment(now).utcOffset(getTimeZoneOffset).format('YYYY-MM-DD hh:mm') 
     // availability[now.toString()] = {} // test now works
   }
-  adjustTime(now)
-  // availability[now.getMinutes()] = space.openingTimes[7] //tests the block above
+  adjustTime(now)  // availability[now.getMinutes()] = space.openingTimes[7] //tests the block above
 
-  //display dates correctly
-  const formatDates = (d:number) => {
+  const formatDates = (d:number) => {   //display dates correctly
     if (d.toString().length == 1) {
       return `0${d}`
     } else {
@@ -54,23 +52,67 @@ export const fetchAvailability = (
     }
   }
 
-  //display months correctly
-  const formatMonths = (d:number) => {
+  const formatMonths = (d:number) => {   //display dates correctly
     if (d.toString().length == 1) {
       return `0${d+1}`
     } else {
       return d+1
     }
   }
+  // we only need to consider opening times on day 1?
 
-  // we need to consdier time zones..
-  //newyork is -5 hours to UTC times that are given... so we need to adjust current time to space.timezone?
   // Loop returns day of the week and opening times for those days.
   for (let i: number = 0; i < numberOfDays; i++) {
     let currentDay = now.getDay() + i;
-    let currentDate = now.getDate() + i; 
+    let currentDate = now.getDate() + i;
     let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(currentDate)}`
 
+    // we need to access the js object... this is how we access the times... they need to be all defined wiht a type check?
+    let currentTimeHour = now.getHours()
+    let currentTimeMinute = now.getMinutes()
+    let openingTimeHour = space.openingTimes[currentDay].open?.hour
+    let openingTimeMinute = space.openingTimes[currentDay].open?.minute
+    let closingTimeHour = space.openingTimes[currentDay].close?.hour
+    let closingTimeMinute = space.openingTimes[currentDay].close?.minute
+
+    if (typeof openingTimeHour === 'number' && typeof openingTimeMinute === 'number') {
+      // define the opening times - do we need to touch closing times? No, but we could compare just incase
+
+      // if hour is greater than opening, and less than closeing proceed
+      // set opening time minutes
+      // if minutes is greater than openingtime minutes > set openingtime minutes
+      //else do nothing
+      if (i === 0) {
+        //start here
+        // on the first iteration we need to assign values to openingtimes etc.
+        // on the next iteration we can assume the opening times are standard :)
+        // Define the first days availability
+        let returnTime: OpeningTimes = space.openingTimes[currentDay]
+        if (currentTimeHour >= returnTime.open!.hour){
+          returnTime.open!.hour = currentTimeHour
+          if (currentTimeMinute > returnTime.open!.minute) {
+            returnTime.open!.minute = currentTimeMinute
+          }
+        }
+        
+        // if (currentTimeHour >= openingTimeHour) {
+        //   // we need to set the this iterations time only to the current time.
+        //   // create a  return object?
+        //   returnTime.open!.hour = currentTimeHour
+        //   // space.openingTimes[currentDay].open!.hour = currentTimeHour // this is how you change the opening times on default object
+
+        //   // how do we return the opening hours to be now.getHours()?
+        //   // availability[currentTimeMinute.toString()] = returnTime
+        //   // availability[currentTimeHour.toString()] = space.openingTimes[currentDay] 
+        // }
+        // availability[currentTimeMinute.toString()] = returnTime
+        availability["2020-09-07"] = returnTime
+
+
+      }
+    }
+
+    // ***
     availability[returnDate] = space.openingTimes[currentDay]
   }
 
