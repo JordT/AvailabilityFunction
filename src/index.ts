@@ -76,9 +76,7 @@ export const fetchAvailability = (
     let closingTimeMinute = space.openingTimes[currentDay].close?.minute
 
     if (typeof openingTimeHour === 'number' && typeof openingTimeMinute === 'number') {
-      //currenttime is in milliseconds ??
-      // ^^ investigate this oepning time comments
-      // ^^ work out what is currently happening
+      // define the opening times - do we need to touch closing times? No, but we could compare just incase
 
       // if hour is greater than opening, and less than closeing proceed
       // set opening time minutes
@@ -88,24 +86,29 @@ export const fetchAvailability = (
         //start here
         // on the first iteration we need to assign values to openingtimes etc.
         // on the next iteration we can assume the opening times are standard :)
-        if (currentTimeHour >= openingTimeHour) {
-          // we need to set the this iterations time only to the current time.
-          // create a  return object?
-          let returnTime: OpeningTimes = {
-            open: {
-              hour: openingTimeHour,
-              minute: openingTimeMinute
-            },
-            close: {
-              hour: closingTimeHour!,
-              minute: closingTimeMinute!
-            }
+        // Define the first days availability
+        let returnTime: OpeningTimes = space.openingTimes[currentDay]
+        if (currentTimeHour >= returnTime.open!.hour){
+          returnTime.open!.hour = currentTimeHour
+          if (currentTimeMinute > returnTime.open!.minute) {
+            returnTime.open!.minute = currentTimeMinute
           }
-
-          // how do we return the opening hours to be now.getHours()?
-          availability[currentTimeHour.toString()] = returnTime
-          // availability[currentTimeHour.toString()] = space.openingTimes[currentDay] 
         }
+        
+        // if (currentTimeHour >= openingTimeHour) {
+        //   // we need to set the this iterations time only to the current time.
+        //   // create a  return object?
+        //   returnTime.open!.hour = currentTimeHour
+        //   // space.openingTimes[currentDay].open!.hour = currentTimeHour // this is how you change the opening times on default object
+
+        //   // how do we return the opening hours to be now.getHours()?
+        //   // availability[currentTimeMinute.toString()] = returnTime
+        //   // availability[currentTimeHour.toString()] = space.openingTimes[currentDay] 
+        // }
+        // availability[currentTimeMinute.toString()] = returnTime
+        availability["2020-09-07"] = returnTime
+
+
       }
     }
 
