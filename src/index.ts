@@ -60,11 +60,12 @@ export const fetchAvailability = (
   let i: number = 0
   let currentDate: Date =  now
   while (i < numberOfDays){
-    let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(now.getDay())}` //Use Luxon to provide formatting
-
+    let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(now.getDate())}` //Use Luxon to provide formatting
+    let currentDay = currentDate.getDay() + 1
+    // day is zero based so we need to add 1
     //format day in this box
-    if (currentDate.getDay() < getLen) {
-      availability[returnDate] = space.openingTimes[currentDate.getDay()]
+    if (currentDay <= getLen) {
+      availability[returnDate] = space.openingTimes[currentDay]
       i++;
     }      
     
