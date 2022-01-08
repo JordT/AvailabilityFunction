@@ -1,4 +1,4 @@
-import { OpeningTimes, Space, Time } from "./types";
+import { OpeningTimes, Space } from "./types";
 var moment = require('moment-timezone');
 
 /**
@@ -56,77 +56,94 @@ export const fetchAvailability = (
     }
   }
 
-  let getLen = Object.keys(space.openingTimes).length // number to iterate through
+  let getLen = Object.keys(space.openingTimes).length
   let i: number = 0
   let currentDate: Date = now
-  while (i < numberOfDays){
+
+  while (i < numberOfDays) {
     let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(now.getDate())}` //Use Luxon to provide formatting
-    let currentDay = currentDate.getDay() // + 1
-
-    if (currentDay <= getLen && currentDay != 0) {
-      availability[`${returnDate}`] = space.openingTimes[currentDay]
-      i++;
-    }
+    let currentDay = currentDate.getDay()
     
-    if(currentDay <= getLen && currentDay == 0) {
-      availability[`${returnDate}`] = space.openingTimes[7]
+    // address Sunday being zero indexed
+    if (currentDay == 0) currentDay = 7;
+
+    // handle first day availability, where we need to consider time of day
+    if (i == 0 && currentDay <= getLen) {
+      if (space.openingTimes[currentDay].open == undefined) {
+        availability[returnDate] = space.openingTimes[currentDay]
+        i++;
+      } else {
+        let currentTimeHour = now.getHours()
+        let currentTimeMinute = now.getMinutes()
+        let returnTime: OpeningTimes = space.openingTimes[currentDay]
+        
+        if (currentTimeHour >= returnTime.open!.hour) {  
+          returnTime.open!.hour = currentTimeHour
+          if (currentTimeMinute > returnTime.open!.minute) {
+            returnTime.open!.minute = currentTimeMinute
+          }
+        }
+        availability[returnDate] = returnTime
+        i++;
+      }
+    }
+    // Handle all valid days that aren't the first day
+    if (i > 0 && currentDay <= getLen) {
+      availability[returnDate] = space.openingTimes[currentDay]
       i++;
     }
-    // iterate to next day
-    currentDate.setDate( currentDate.getDate() + 1) // loop through the daysss bby
+
+    // iterate to the next day if there's it's not defined in the 'space' object
+    if ( currentDay > getLen) {
+      currentDate.setDate(currentDate.getDate() + 1)
+    }
   }
-
-
-
-
-
-
-
-
-
-
-  // loop through by date until 
-
-  // for (let i: number = 0; i < numberOfDays; i++) {
-
-  //   // Day is now 0
-  //   // let currentDay = now.getDay() || 7 - 1; // DAY OF THE WEEK 0-6
-  //   let currentDay = now.getDay() + i; // DAY OF THE WEEK 0-6
-  //   let currentDate = now.getDate() + i; // YYYY MM DD // can't iterate with i
-  //   let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(currentDate)}`
-
-    
-
-  //   // check times for day 1
-  //   if (i === 0) {
-  //     // If there's no availablility on current day - return empty object
-  //     if(space.openingTimes[currentDay] == undefined) {
-  //       availability[returnDate] = {}
-  //     } 
-      
-  //     if (space.openingTimes[currentDay] != undefined) { // else return time
-  //       let currentTimeHour = now.getHours()
-  //       let currentTimeMinute = now.getMinutes()
-  //       let returnTime: OpeningTimes = space.openingTimes[currentDay] 
-      
-  //       if (currentTimeHour >= returnTime.open!.hour) {  
-  //         returnTime.open!.hour = currentTimeHour
-  //         if (currentTimeMinute > returnTime.open!.minute) {
-  //           returnTime.open!.minute = currentTimeMinute
-  //         }
-  //       }
-  //       availability[returnDate] = returnTime
-  //     }
-  //   }
-
-  //   // return remaining days w/ no time consideration
-  //   if (i >= 1) {
-  //     availability[returnDate] = space.openingTimes[currentDay]
-  //   }
-  // }
-  
   return availability;
 };
+
+// we need to return multiple days - look how/when we are iterating.
+// get rid of moment
+
+// loop through by date until 
+
+// for (let i: number = 0; i < numberOfDays; i++) {
+
+//   // Day is now 0
+//   // let currentDay = now.getDay() || 7 - 1; // DAY OF THE WEEK 0-6
+//   let currentDay = now.getDay() + i; // DAY OF THE WEEK 0-6
+//   let currentDate = now.getDate() + i; // YYYY MM DD // can't iterate with i
+//   let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(currentDate)}`
+
+  
+
+//   // check times for day 1
+//   if (i === 0) {
+//     // If there's no availablility on current day - return empty object
+//     if(space.openingTimes[currentDay] == undefined) {
+//       availability[returnDate] = {}
+//     } 
+    
+//     if (space.openingTimes[currentDay] != undefined) { // else return time
+//       let currentTimeHour = now.getHours()
+//       let currentTimeMinute = now.getMinutes()
+//       let returnTime: OpeningTimes = space.openingTimes[currentDay] 
+    
+      // if (currentTimeHour >= returnTime.open!.hour) {  
+      //   returnTime.open!.hour = currentTimeHour
+      //   if (currentTimeMinute > returnTime.open!.minute) {
+      //     returnTime.open!.minute = currentTimeMinute
+      //   }
+      // }
+//       availability[returnDate] = returnTime
+//     }
+//   }
+
+//   // return remaining days w/ no time consideration
+//   if (i >= 1) {
+//     availability[returnDate] = space.openingTimes[currentDay]
+//   }
+// }
+
 
 // Calculate availabilty for the number of days specified in numberOfDays
 
