@@ -58,17 +58,20 @@ export const fetchAvailability = (
 
   let getLen = Object.keys(space.openingTimes).length // number to iterate through
   let i: number = 0
-  let currentDate: Date =  now
+  let currentDate: Date = now
   while (i < numberOfDays){
     let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(now.getDate())}` //Use Luxon to provide formatting
-    let currentDay = currentDate.getDay() + 1
-    // day is zero based so we need to add 1
-    //format day in this box
-    if (currentDay <= getLen) {
-      availability[returnDate] = space.openingTimes[currentDay]
+    let currentDay = currentDate.getDay() // + 1
+
+    if (currentDay <= getLen && currentDay != 0) {
+      availability[`${returnDate}`] = space.openingTimes[currentDay]
       i++;
-    }      
+    }
     
+    if(currentDay <= getLen && currentDay == 0) {
+      availability[`${returnDate}`] = space.openingTimes[7]
+      i++;
+    }
     // iterate to next day
     currentDate.setDate( currentDate.getDate() + 1) // loop through the daysss bby
   }
