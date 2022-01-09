@@ -20,6 +20,8 @@ export const fetchAvailability = (
   now = moment(now).utcOffset(getTimeZoneOffset).format('YYYY-MM-DD hh:mm') // apply timezone offset
   now = moment(now).toDate();   //convert moment wrapper back to a JS Date Object (we could refactor to moment throughout...)
 
+  // moment is using a 12 hour clock. super duper
+  
   // Round current minutes to next 15 minute interval
   if (now.getMinutes() != 0 || 15 || 30 || 45){
     if (now.getMinutes() < 15) {
@@ -59,6 +61,7 @@ export const fetchAvailability = (
   let getLen = Object.keys(space.openingTimes).length
   let i: number = 0
   let currentDate: Date = now
+  let firstDayComplete: boolean = false
 
   while (i < numberOfDays) {
     let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(now.getDate())}` //Use Luxon to provide formatting
@@ -68,35 +71,55 @@ export const fetchAvailability = (
     if (currentDay == 0) currentDay = 7;
 
     // handle first day availability, where we need to consider time of day
-    if (i == 0 && currentDay <= getLen) {
+    if (firstDayComplete == false && currentDay <= getLen) {
       if (space.openingTimes[currentDay].open == undefined) {
         availability[returnDate] = space.openingTimes[currentDay]
+        currentDate.setDate(currentDate.getDate() + 1)
         i++;
       } else {
         let currentTimeHour = now.getHours()
         let currentTimeMinute = now.getMinutes()
-        let returnTime: OpeningTimes = space.openingTimes[currentDay]
-        
-        if (currentTimeHour >= returnTime.open!.hour) {  
+        let returnTime: OpeningTimes = {
+          "open" : {
+            "hour": space.openingTimes[currentDay].open!.hour,
+            "minute": space.openingTimes[currentDay].open!.minute
+          },
+          "close": {
+            "hour": space.openingTimes[currentDay].close!.hour,
+            "minute": space.openingTimes[currentDay].close!.minute
+          }
+        }
+
+        // Set opening time and adjust if required
+        if (currentTimeHour >= space.openingTimes[currentDay].open!.hour) {
           returnTime.open!.hour = currentTimeHour
-          if (currentTimeMinute > returnTime.open!.minute) {
+          if (currentTimeMinute > space.openingTimes[currentDay].open!.hour){
             returnTime.open!.minute = currentTimeMinute
           }
         }
+
+        if(currentTimeHour >= space.openingTimes[currentDay].close!.hour) {
+          currentDate.setDate(currentDate.getDate() + 1)
+          continue;
+        }
+
         availability[returnDate] = returnTime
+        currentDate.setDate(currentDate.getDate() + 1)
         i++;
       }
     }
-    // Handle all valid days that aren't the first day
-    if (i > 0 && currentDay <= getLen) {
+    // Handle all valid days that aren't the first day need a correct flag here...
+    if (i > 0 && firstDayComplete == true && currentDay <= getLen) {
       availability[returnDate] = space.openingTimes[currentDay]
+      currentDate.setDate(currentDate.getDate() + 1)
       i++;
     }
 
-    // iterate to the next day if there's it's not defined in the 'space' object
-    if ( currentDay > getLen) {
-      currentDate.setDate(currentDate.getDate() + 1)
+    // iterate to the next day if availability is not defined in the 'space' object
+    if (currentDay > getLen) {
+      currentDate.setDate(currentDate.getDate() + 1) // does this need to be in an if? We always want to move to the next day.
     }
+    firstDayComplete = true;
   }
   return availability;
 };
