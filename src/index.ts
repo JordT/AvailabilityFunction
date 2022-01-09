@@ -1,5 +1,6 @@
+import { IANAZone } from "luxon";
 import { OpeningTimes, Space } from "./types";
-var moment = require('moment-timezone');
+const { DateTime } = require('luxon');
 
 /**
  * Fetches upcoming availability for a space
@@ -16,10 +17,23 @@ export const fetchAvailability = (
   let availability: Record<string, OpeningTimes> = {}
 
   // adjust 'now' Date object to the timezone specified in space object
-  let getTimeZoneOffset = moment(now).tz(space.timeZone).format('ZZ') //get timezone offset
-  now = moment(now).utcOffset(getTimeZoneOffset).format('YYYY-MM-DD hh:mm') // apply timezone offset
-  now = moment(now).toDate();   //convert moment wrapper back to a JS Date Object (we could refactor to moment throughout...)
+  // let getTimeZoneOffset = moment(now).tz(space.timeZone).format('ZZ') //get timezone offset
+  // now = moment(now).utcOffset(getTimeZoneOffset).format('YYYY-MM-DD hh:mm') // apply timezone offset
+  // now = moment(now).toDate();   //convert moment wrapper back to a JS Date Object (we could refactor to moment throughout...)
 
+  // This gets us a Luxon datetime object
+  availability[now.toString()] = {}
+  let getLuxonDTObj = DateTime.fromJSDate(now)
+  // let getTimeZoneOffset = new IANAZone(space.timeZone)
+  // availability[getLuxonDTObj.toString()] = {}
+  availability[getLuxonDTObj] = {}
+  // need to get an offest from the space.timezone?
+  // and apply it
+  // availability[getTimeZoneOffset.offset(1).toString()] = {}
+
+  // get the timezone offset
+  // create adjust the date object
+  // return to vanilla
   // moment is using a 12 hour clock. super duper
   
   // Round current minutes to next 15 minute interval
