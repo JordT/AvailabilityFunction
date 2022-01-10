@@ -15,7 +15,7 @@ export const fetchAvailability = (
   // Create return object
   let availability: Record<string, OpeningTimes> = {}
 
-  // Round current time to 15 minute interval and adjust for space.minimumNotice
+  // Round current time to next 15 minute interval and adjust for space.minimumNotice
   if (now.getMinutes() != 0 || 15 || 30 || 45){
     if (now.getMinutes() < 15) {
       now.setMinutes(15)
@@ -37,17 +37,16 @@ export const fetchAvailability = (
   // Create Luxon DateTime object 'nowTz' which is 'now' param adjusted for space.timeZone (Tz)
   let zone = space.timeZone
   let nowTz = DateTime.fromJSDate(now, {zone})
-  // availability[`${nowTz}`] = {} // test test
 
+  // set variables that iterate in while loop
   let getLen = Object.keys(space.openingTimes).length
   let i: number = 0
   let currentDate = nowTz
-  // let currentDay = nowTz.weekday
   let firstDayComplete: boolean = false
 
   while (i < numberOfDays) {
     let returnDate = currentDate.toFormat('yyyy-MM-dd')
-    let currentDay = currentDate.weekday //rename weekday?
+    let currentDay = currentDate.weekday
     
     // handle first day availability, where we need to consider time of day
     if (firstDayComplete == false && currentDay <= getLen) {
@@ -69,7 +68,14 @@ export const fetchAvailability = (
           }
         }
 
-        // Set opening time and adjust if required
+        // Skip to next day if current time is after closing time 
+        if(currentTimeHour >= space.openingTimes[currentDay].close!.hour) {
+          currentDate = currentDate.plus({days: 1})
+          firstDayComplete = true;
+          continue;
+        }
+
+        // Adjust first availability it current time is after opening time
         if (currentTimeHour >= space.openingTimes[currentDay].open!.hour) {
           returnTime.open!.hour = currentTimeHour
           if (currentTimeMinute > space.openingTimes[currentDay].open!.hour){
@@ -77,15 +83,8 @@ export const fetchAvailability = (
           }
         }
 
-        if(currentTimeHour >= space.openingTimes[currentDay].close!.hour) {
-          currentDate = currentDate.plus({days: 1})
-          firstDayComplete = true;
-          continue;
-        }
-
         availability[returnDate] = returnTime
         currentDate = currentDate.plus({days: 1})
-        // currentDate.plus({days : 1})
         i++;
       }
     }
