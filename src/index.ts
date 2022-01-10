@@ -39,7 +39,6 @@ export const fetchAvailability = (
   let nowTz = DateTime.fromJSDate(now, {zone})
 
   // set variables that iterate in while loop
-  let getLen = Object.keys(space.openingTimes).length
   let i: number = 0
   let currentDate = nowTz
   let firstDayComplete: boolean = false
@@ -49,7 +48,7 @@ export const fetchAvailability = (
     let currentDay = currentDate.weekday
     
     // handle first day availability, where we need to consider time of day
-    if (firstDayComplete == false && currentDay <= getLen) {
+    if (firstDayComplete == false) {
       if (space.openingTimes[currentDay].open == undefined) {
         availability[returnDate] = space.openingTimes[currentDay]
         currentDate = currentDate.plus({days: 1})
@@ -75,7 +74,7 @@ export const fetchAvailability = (
           continue;
         }
 
-        // Adjust first availability it current time is after opening time
+        // Adjust first availability if current time is after opening time
         if (currentTimeHour >= space.openingTimes[currentDay].open!.hour) {
           returnTime.open!.hour = currentTimeHour
           if (currentTimeMinute > space.openingTimes[currentDay].open!.hour){
@@ -89,16 +88,17 @@ export const fetchAvailability = (
       }
     }
     // Handle all valid days that aren't the first day need a correct flag here...
-    if (firstDayComplete == true && currentDay <= getLen) {
+    if (firstDayComplete == true && space.openingTimes[currentDay] != undefined) {
       availability[returnDate] = space.openingTimes[currentDay]
       currentDate = currentDate.plus({days : 1})
       i++;
     }
 
+    // the day is a valid day... we need to check current day exists not openingtime
     // iterate to the next day if availability is not defined in the 'space' object
     // if (space.openingTimes[currentDay].open == undefined) {} // is this check better?
-    if (currentDay > getLen) {
-      currentDate.plus({days : 1}) // does this need to be in an if? We always want to move to the next day.
+    if (firstDayComplete == true && space.openingTimes[currentDay] == undefined) {
+      currentDate = currentDate.plus({days : 1}) // does this need to be in an if? We always want to move to the next day.
     }
     firstDayComplete = true;
   }

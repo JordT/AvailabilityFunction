@@ -158,7 +158,7 @@ describe("src/index", () => {
 
 // get a full week back
 describe("src/index", () => {
-  describe("mutliple dates with no advance notice", () => {
+  describe("Test 5: mutliple dates with no advance notice", () => {
     let space: Space;
     before(async () => {
       space = await import("../fixtures/space-with-no-advance-notice.json");
