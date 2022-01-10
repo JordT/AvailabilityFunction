@@ -1,5 +1,5 @@
 import { OpeningTimes, Space } from "./types";
-var moment = require('moment-timezone');
+const { DateTime } = require('luxon');
 
 /**
  * Fetches upcoming availability for a space
@@ -15,14 +15,7 @@ export const fetchAvailability = (
   // Create return object
   let availability: Record<string, OpeningTimes> = {}
 
-  // adjust 'now' Date object to the timezone specified in space object
-  let getTimeZoneOffset = moment(now).tz(space.timeZone).format('ZZ') //get timezone offset
-  now = moment(now).utcOffset(getTimeZoneOffset).format('YYYY-MM-DD hh:mm') // apply timezone offset
-  now = moment(now).toDate();   //convert moment wrapper back to a JS Date Object (we could refactor to moment throughout...)
-
-  // moment is using a 12 hour clock. super duper
-  
-  // Round current minutes to next 15 minute interval
+  // Round current time to 15 minute interval and adjust for space.minimumNotice
   if (now.getMinutes() != 0 || 15 || 30 || 45){
     if (now.getMinutes() < 15) {
       now.setMinutes(15)
@@ -37,48 +30,34 @@ export const fetchAvailability = (
     }
   }
   
-  //Adjust time for space.minimumNotice
   if (space.minimumNotice > 0) {
     now.setMinutes(now.getMinutes() + space.minimumNotice)
   }
 
-  // Functions to display date/month in strings
-  const formatDates = (d:number) => {   //display dates correctly
-    if (d.toString().length == 1) {
-      return `0${d}`
-    } else {
-      return d
-    }
-  }
-  const formatMonths = (d:number) => {   //display dates correctly - adjust for zero index
-    if (d.toString().length == 1) {
-      return `0${d+1}`
-    } else {
-      return d+1
-    }
-  }
+  // Create Luxon DateTime object 'nowTz' which is 'now' param adjusted for space.timeZone (Tz)
+  let zone = space.timeZone
+  let nowTz = DateTime.fromJSDate(now, {zone})
+  // availability[`${nowTz}`] = {} // test test
 
   let getLen = Object.keys(space.openingTimes).length
   let i: number = 0
-  let currentDate: Date = now
+  let currentDate = nowTz
+  // let currentDay = nowTz.weekday
   let firstDayComplete: boolean = false
 
   while (i < numberOfDays) {
-    let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(now.getDate())}` //Use Luxon to provide formatting
-    let currentDay = currentDate.getDay()
+    let returnDate = currentDate.toFormat('yyyy-MM-dd')
+    let currentDay = currentDate.weekday //rename weekday?
     
-    // address Sunday being zero indexed
-    if (currentDay == 0) currentDay = 7;
-
     // handle first day availability, where we need to consider time of day
     if (firstDayComplete == false && currentDay <= getLen) {
       if (space.openingTimes[currentDay].open == undefined) {
         availability[returnDate] = space.openingTimes[currentDay]
-        currentDate.setDate(currentDate.getDate() + 1)
+        currentDate = currentDate.plus({days: 1})
         i++;
       } else {
-        let currentTimeHour = now.getHours()
-        let currentTimeMinute = now.getMinutes()
+        let currentTimeHour = nowTz.hour
+        let currentTimeMinute = nowTz.minute
         let returnTime: OpeningTimes = {
           "open" : {
             "hour": space.openingTimes[currentDay].open!.hour,
@@ -99,76 +78,30 @@ export const fetchAvailability = (
         }
 
         if(currentTimeHour >= space.openingTimes[currentDay].close!.hour) {
-          currentDate.setDate(currentDate.getDate() + 1)
+          currentDate = currentDate.plus({days: 1})
+          firstDayComplete = true;
           continue;
         }
 
         availability[returnDate] = returnTime
-        currentDate.setDate(currentDate.getDate() + 1)
+        currentDate = currentDate.plus({days: 1})
+        // currentDate.plus({days : 1})
         i++;
       }
     }
     // Handle all valid days that aren't the first day need a correct flag here...
-    if (i > 0 && firstDayComplete == true && currentDay <= getLen) {
+    if (firstDayComplete == true && currentDay <= getLen) {
       availability[returnDate] = space.openingTimes[currentDay]
-      currentDate.setDate(currentDate.getDate() + 1)
+      currentDate = currentDate.plus({days : 1})
       i++;
     }
 
     // iterate to the next day if availability is not defined in the 'space' object
+    // if (space.openingTimes[currentDay].open == undefined) {} // is this check better?
     if (currentDay > getLen) {
-      currentDate.setDate(currentDate.getDate() + 1) // does this need to be in an if? We always want to move to the next day.
+      currentDate.plus({days : 1}) // does this need to be in an if? We always want to move to the next day.
     }
     firstDayComplete = true;
   }
   return availability;
 };
-
-// we need to return multiple days - look how/when we are iterating.
-// get rid of moment
-
-// loop through by date until 
-
-// for (let i: number = 0; i < numberOfDays; i++) {
-
-//   // Day is now 0
-//   // let currentDay = now.getDay() || 7 - 1; // DAY OF THE WEEK 0-6
-//   let currentDay = now.getDay() + i; // DAY OF THE WEEK 0-6
-//   let currentDate = now.getDate() + i; // YYYY MM DD // can't iterate with i
-//   let returnDate = `${now.getFullYear()}-${formatMonths(now.getMonth())}-${formatDates(currentDate)}`
-
-  
-
-//   // check times for day 1
-//   if (i === 0) {
-//     // If there's no availablility on current day - return empty object
-//     if(space.openingTimes[currentDay] == undefined) {
-//       availability[returnDate] = {}
-//     } 
-    
-//     if (space.openingTimes[currentDay] != undefined) { // else return time
-//       let currentTimeHour = now.getHours()
-//       let currentTimeMinute = now.getMinutes()
-//       let returnTime: OpeningTimes = space.openingTimes[currentDay] 
-    
-      // if (currentTimeHour >= returnTime.open!.hour) {  
-      //   returnTime.open!.hour = currentTimeHour
-      //   if (currentTimeMinute > returnTime.open!.minute) {
-      //     returnTime.open!.minute = currentTimeMinute
-      //   }
-      // }
-//       availability[returnDate] = returnTime
-//     }
-//   }
-
-//   // return remaining days w/ no time consideration
-//   if (i >= 1) {
-//     availability[returnDate] = space.openingTimes[currentDay]
-//   }
-// }
-
-
-// Calculate availabilty for the number of days specified in numberOfDays
-
-// Don't return times that in the past relative to 'now'
-
