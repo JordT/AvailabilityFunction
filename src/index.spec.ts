@@ -2,7 +2,7 @@ import * as expect from "expect";
 import { fetchAvailability } from "./index";
 import { Space } from "./types";
 
-// the end goal
+// Test provided
 describe("src/index", () => {
   describe("a space with no advance notice", () => {
     let space: Space;
@@ -164,7 +164,7 @@ describe("src/index", () => {
       space = await import("../fixtures/space-with-no-advance-notice.json");
     });
 
-    it("fetches multiple days of availability for a space before the space has opened", () => {
+    it("fetches 7 days of availability", () => {
       const availability = fetchAvailability(
         space,
         7,
@@ -233,20 +233,54 @@ describe("src/index", () => {
 
 // Check it returns correctly if the time is past that days closing time
 describe("src/index", () => {
-  describe("the time is later than closing", () => {
+  describe("a date with no advance notice", () => {
     let space: Space;
     before(async () => {
       space = await import("../fixtures/space-with-no-advance-notice.json");
     });
 
     // because of the time zone adjustment, the space is open.
-    it("fetches availability for the next day", () => {
+    it("fetches availability for the next day as space is closed", () => {
       const availability = fetchAvailability(
         space,
         1,
         new Date(Date.UTC(2020, 8, 7, 22, 22))
                         // year, month-1, day, 
                         // Mon, 07 Sep 2020 22:22:00 GMT
+      );
+
+      expect(availability).toStrictEqual({
+        "2020-09-08": {
+          open: {
+            hour: 9,
+            minute: 0,
+          },
+          close: {
+            hour: 17,
+            minute: 0,
+          },
+        },
+      });
+    });
+  });
+});
+
+// boundary time test
+describe("src/index", () => {
+  describe("a space with no advance notice", () => {
+    let space: Space;
+    before(async () => {
+      space = await import("../fixtures/space-with-no-advance-notice.json");
+    });
+
+    // because of the time zone adjustment, the space is open.
+    it("fetches availability for the following day - uses boundary time", () => {
+      const availability = fetchAvailability(
+        space,
+        1,
+        new Date(Date.UTC(2020, 8, 8, 3, 46))
+                        // year, month-1, day, 
+                        // Mon, 08 Sep 2020 03:46:00 GMT
       );
 
       expect(availability).toStrictEqual({
