@@ -52,14 +52,14 @@ export const fetchAvailability = (
     // handle first day availability, where we need to consider time of day
     if (firstDayComplete == false) {
       
-      // iterate day if no space availability for that weekday
+      // iterate day if space is closed on that weekday
       if (space.openingTimes[currentDay].open == undefined) {
         availability[returnDate] = space.openingTimes[currentDay]
         currentDate = currentDate.plus({days: 1})
         i++;
-      } else {
+      } else { // return first available time for day one if space is open
         
-        // return first available time for day one
+        // set required time variables
         let currentTimeHour = nowTz.hour
         let currentTimeMinute = nowTz.minute
         let returnTime: OpeningTimes = {
@@ -73,14 +73,14 @@ export const fetchAvailability = (
           }
         }
 
-        // Skip to next day if current time is after closing time 
+        // skip to next day if current time is after closing time 
         if(currentTimeHour >= space.openingTimes[currentDay].close!.hour) {
           currentDate = currentDate.plus({days: 1})
           firstDayComplete = true;
           continue;
         }
 
-        // Adjust first availability if current time is after opening time
+        // adjust time for first availability if current time is after opening time
         if (currentTimeHour >= space.openingTimes[currentDay].open!.hour) {
           returnTime.open!.hour = currentTimeHour
           if (currentTimeMinute > space.openingTimes[currentDay].open!.hour){
@@ -94,18 +94,20 @@ export const fetchAvailability = (
       }
     }
 
-    // Handle all valid days that aren't the first day
+    // Return all days that have availability and aren't the first day
     if (firstDayComplete == true && space.openingTimes[currentDay] != undefined) {
       availability[returnDate] = space.openingTimes[currentDay]
       currentDate = currentDate.plus({days : 1})
       i++;
     }
 
-    // iterate 
+    // iterate to next day if weekday availability not in space
     if (firstDayComplete == true && space.openingTimes[currentDay] == undefined) {
       currentDate = currentDate.plus({days : 1})
     }
-    firstDayComplete = true;
+    firstDayComplete = true // set first day to true
   }
+
+  // return availability object
   return availability;
 };
