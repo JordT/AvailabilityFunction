@@ -12,6 +12,7 @@ export const fetchAvailability = (
   numberOfDays: number,
   now: Date
 ): Record<string, OpeningTimes> => {
+  
   // Create return object
   let availability: Record<string, OpeningTimes> = {}
 
@@ -43,17 +44,22 @@ export const fetchAvailability = (
   let currentDate = nowTz
   let firstDayComplete: boolean = false
 
+  // Loop through dates adding appropriate times/days to 'availability' object
   while (i < numberOfDays) {
     let returnDate = currentDate.toFormat('yyyy-MM-dd')
     let currentDay = currentDate.weekday
     
     // handle first day availability, where we need to consider time of day
     if (firstDayComplete == false) {
+      
+      // iterate day if no space availability for that weekday
       if (space.openingTimes[currentDay].open == undefined) {
         availability[returnDate] = space.openingTimes[currentDay]
         currentDate = currentDate.plus({days: 1})
         i++;
       } else {
+        
+        // return first available time for day one
         let currentTimeHour = nowTz.hour
         let currentTimeMinute = nowTz.minute
         let returnTime: OpeningTimes = {
@@ -87,18 +93,17 @@ export const fetchAvailability = (
         i++;
       }
     }
-    // Handle all valid days that aren't the first day need a correct flag here...
+
+    // Handle all valid days that aren't the first day
     if (firstDayComplete == true && space.openingTimes[currentDay] != undefined) {
       availability[returnDate] = space.openingTimes[currentDay]
       currentDate = currentDate.plus({days : 1})
       i++;
     }
 
-    // the day is a valid day... we need to check current day exists not openingtime
-    // iterate to the next day if availability is not defined in the 'space' object
-    // if (space.openingTimes[currentDay].open == undefined) {} // is this check better?
+    // iterate 
     if (firstDayComplete == true && space.openingTimes[currentDay] == undefined) {
-      currentDate = currentDate.plus({days : 1}) // does this need to be in an if? We always want to move to the next day.
+      currentDate = currentDate.plus({days : 1})
     }
     firstDayComplete = true;
   }
