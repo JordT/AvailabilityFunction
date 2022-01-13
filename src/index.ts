@@ -1,5 +1,5 @@
-import { OpeningTimes, Space } from './types';
-const { DateTime } = require('luxon');
+import { OpeningTimes, Space } from "./types";
+const { DateTime } = require("luxon");
 
 /**
  * Fetches upcoming availability for a space
@@ -32,6 +32,7 @@ export const fetchAvailability = (
     if (space.minimumNotice > 0) {
         now.setMinutes(now.getMinutes() + space.minimumNotice);
     }
+
     // Create Luxon DateTime object 'nowTz' which is 'now' param adjusted for space.timeZone (Tz)
     let zone = space.timeZone;
     let nowTz = DateTime.fromJSDate(now, { zone });
@@ -43,7 +44,7 @@ export const fetchAvailability = (
 
     // Loop through dates adding appropriate times/days to 'availability' object
     while (i < numberOfDays) {
-        let returnDate = currentDate.toFormat('yyyy-MM-dd');
+        let returnDate = currentDate.toFormat("yyyy-MM-dd");
         let currentDay = currentDate.weekday;
 
         // handle first day availability, where we need to consider time of day
